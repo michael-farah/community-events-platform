@@ -1,11 +1,17 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { AuthModal } from "./auth/AuthModal";
 
 export const Navbar = () => {
-  const { user, isAuthenticated, signOut, isLoading } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const {
+    user,
+    isAuthenticated,
+    signOut,
+    isLoading,
+    hideAuthModal,
+    isAuthModalOpen,
+    showAuthModal,
+  } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -73,7 +79,7 @@ export const Navbar = () => {
                 </div>
               ) : (
                 <button
-                  onClick={() => setIsAuthModalOpen(true)}
+                  onClick={showAuthModal}
                   className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
                   Sign In
                 </button>
@@ -82,10 +88,7 @@ export const Navbar = () => {
           </div>
         </div>
       </nav>
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      <AuthModal isOpen={isAuthModalOpen} onClose={hideAuthModal} />
     </>
   );
 };

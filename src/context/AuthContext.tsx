@@ -17,6 +17,9 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   error: string | null;
   message: string | null;
+  isAuthModalOpen: boolean;
+  showAuthModal: () => void;
+  hideAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -26,7 +29,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const showAuthModal = useCallback(() => setIsAuthModalOpen(true), []);
+  const hideAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
   const resetAuthState = () => {
     setError(null);
     setMessage(null);
@@ -205,6 +210,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signOut,
         error,
         message,
+        isAuthModalOpen,
+        showAuthModal,
+        hideAuthModal,
       }}>
       {children}
     </AuthContext.Provider>
