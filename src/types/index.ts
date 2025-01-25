@@ -11,3 +11,18 @@ export interface Event {
   image_url?: string;
   category?: string;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  isStaff: boolean;
+  events: string[];
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error?: string;
+}
