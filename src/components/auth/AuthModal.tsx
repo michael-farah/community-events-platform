@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -13,15 +14,33 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     password: "",
     name: "",
   });
+  const [showEventMessage, setShowEventMessage] = useState(false);
   const { signIn, signUp, error, message, isAuthenticated, isLoading } =
     useAuth();
+
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    sessionStorage.removeItem("redirectEventId");
+    onClose();
+  };
+
+  useEffect(() => {
+    setShowEventMessage(!!sessionStorage.getItem("redirectEventId"));
+  }, [isOpen]);
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       onClose();
       resetForm();
+
+      const redirectEventId = sessionStorage.getItem("redirectEventId");
+      if (redirectEventId) {
+        sessionStorage.removeItem("redirectEventId");
+        navigate(`/events/${redirectEventId}`);
+      }
     }
-  }, [isAuthenticated, isLoading, onClose]);
+  }, [isAuthenticated, isLoading, onClose, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,14 +76,24 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 dark:bg-slate-900/75 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md relative shadow-xl dark:shadow-slate-900/50">
+    <div
+      className="fixed inset-0 bg-black/50 dark:bg-slate-900/75 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
+      onClick={handleClose}>
+      <div
+        className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md relative shadow-xl dark:shadow-slate-900/50"
+        onClick={(e) => e.stopPropagation()}>
+        {showEventMessage && (
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 text-blue-600 rounded-lg dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-200 text-sm">
+            You need to be signed in to register for events
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isSignIn ? "Welcome Back" : "Create Account"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-2xl font-light text-gray-500 hover:text-gray-700 dark:text-slate-300 dark:hover:text-slate-100 transition-colors p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full"
             aria-label="Close">
             ×
