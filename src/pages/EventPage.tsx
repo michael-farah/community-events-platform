@@ -3,6 +3,12 @@ import { useParams } from "react-router-dom";
 import { eventsApi } from "../utils/api/events";
 import { useAuth } from "../context/AuthContext";
 import { format, parseISO, isPast } from "date-fns";
+import {
+  gapiLoaded,
+  gisLoaded,
+  addEventToCalendar,
+  handleAuthClick,
+} from "../utils/googleCalendar";
 
 export const EventPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -10,6 +16,11 @@ export const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    gapiLoaded();
+    gisLoaded();
+  }, []);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -26,6 +37,49 @@ export const EventPage = () => {
     };
     loadEvent();
   }, [eventId]);
+
+  const handleAddToCalendar = async () => {
+    if (!isAuthenticated || !user) {
+      sessionStorage.setItem("redirectEventId", eventId!);
+      showAuthModal();
+      return;
+    }
+    try {
+      const eventDate = new Date(event.date);
+      const [hours, minutes] = event.time.split(":").map(Number);
+
+      eventDate.setHours(hours, minutes, 0, 0);
+
+      const startDateTime = eventDate.toISOString();
+
+      const endDateTime = new Date(
+        eventDate.getTime() + 60 * 60 * 1000
+      ).toISOString();
+
+      const eventDetails = {
+        title: event.title,
+        location: event.location,
+        description: event.description,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+      };
+
+      await handleAuthClick(
+        async () => {
+          await addEventToCalendar(eventDetails);
+          alert("Event added to Google Calendar!");
+        },
+        (error) => {
+          console.error("Google OAuth error:", error);
+          alert("Failed to authenticate with Google.");
+        }
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to add event to calendar"
+      );
+    }
+  };
 
   const handleRegistration = async () => {
     if (!isAuthenticated || !user) {
@@ -212,6 +266,11 @@ export const EventPage = () => {
                   : "Register Now"}
               </button>
             )}
+            <button
+              onClick={handleAddToCalendar}
+              className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg mt-4 transition-colors">
+              Add to Google Calendar
+            </button>
           </div>
         )}
       </div>
