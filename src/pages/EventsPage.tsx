@@ -44,10 +44,10 @@ export const EventsPage = () => {
       if (error) throw error;
 
       if (data) {
-        const formattedEvents = data.map((event) => ({
+        const formattedEvents = data.map((event:any) => ({
           ...event,
           organizer:
-            (event.organizer as { name: string }[])?.[0]?.name ||
+            (event.organizer as { name: string })?.name ||
             "Unknown Organizer",
           date: new Date(event.date).toISOString(),
           current_attendees: event.current_attendees || 0,
