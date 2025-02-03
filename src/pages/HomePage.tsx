@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export const HomePage = () => {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen flex items-center bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-slate-900 dark:to-slate-800 py-20 px-4">
       <div className="max-w-4xl mx-auto text-center relative">
@@ -41,26 +43,28 @@ export const HomePage = () => {
               Browse Events
             </Link>
 
-            {window.innerWidth > 640 && (
+            {user?.isStaff && window.innerWidth > 640 && (
               <span className="text-gray-500 dark:text-gray-400 mx-2">or</span>
             )}
 
-            <Link
-              to="/events/create"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-gray-300 hover:border-gray-400 dark:border-slate-600 dark:hover:border-slate-500 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Create Event
-            </Link>
+            {user?.isStaff && (
+              <Link
+                to="/events/create"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-gray-300 hover:border-gray-400 dark:border-slate-600 dark:hover:border-slate-500 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transform transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Create Event
+              </Link>
+            )}
           </div>
 
           {/* Feature Highlights */}
