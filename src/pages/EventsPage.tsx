@@ -18,8 +18,8 @@ export const EventsPage = () => {
     }
   }, [authLoading]);
 
-  const loadEvents = async () => {
-    console.log("Starting to load events...");
+  const loadEvents = async (attempt = 1) => {
+    console.log(`Loading events attempt ${attempt}...`);
     setIsLoading(true);
 
     try {
@@ -44,11 +44,9 @@ export const EventsPage = () => {
       if (error) throw error;
 
       if (data) {
-        const formattedEvents = data.map((event:any) => ({
+        const formattedEvents = data.map((event: any) => ({
           ...event,
-          organizer:
-            (event.organizer as { name: string })?.name ||
-            "Unknown Organizer",
+          organizer: event.organizer?.name || "Unknown Organizer",
           date: new Date(event.date).toISOString(),
           current_attendees: event.current_attendees || 0,
           max_attendees: event.max_attendees || undefined,
@@ -57,8 +55,14 @@ export const EventsPage = () => {
         setEvents(formattedEvents);
       }
     } catch (err) {
-      console.error("Detailed error in loadEvents:", err);
-      setError(err instanceof Error ? err.message : "Failed to load events");
+      console.error("Event load error:", err);
+
+      if (attempt < 3) {
+        console.log(`Retrying... (${attempt + 1}/3)`);
+        setTimeout(() => loadEvents(attempt + 1), 2000 * attempt);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to load events");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +122,7 @@ export const EventsPage = () => {
           </div>
           <p className="text-red-500 dark:text-red-300 text-sm">{error}</p>
           <button
-            onClick={loadEvents}
+            onClick={(_e) => loadEvents()}
             className="mt-4 px-4 py-2 text-sm bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-300 rounded-lg transition-colors">
             Retry
           </button>

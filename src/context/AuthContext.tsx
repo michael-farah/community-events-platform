@@ -40,7 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = useCallback(
     async (userId: string, userEmail: string) => {
       try {
-        const TIMEOUT_DURATION = 5000;
+        const TIMEOUT_DURATION = 8000;
+        let timeoutId: NodeJS.Timeout;
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => {
+            reject(new Error("Profile fetch timed out"));
+          }, TIMEOUT_DURATION);
+        });
+
         const profilePromise = supabase
           .from("profiles")
           .select("*")
@@ -49,19 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { data: profile, error: profileError } = await Promise.race([
           profilePromise,
-          new Promise<any>((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Profile fetch timed out")),
-              TIMEOUT_DURATION
-            )
-          ),
-        ]);
+          timeoutPromise,
+        ]).finally(() => clearTimeout(timeoutId));
 
         if (profileError) throw profileError;
-
-        if (!profile) {
-          throw new Error("User profile not found");
-        }
+        if (!profile) throw new Error("User profile not found");
 
         const { data: registrations } = await supabase
           .from("event_registrations")
@@ -87,10 +87,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      setIsLoading(true);
       try {
         const {
           data: { session },
+          error: sessionError,
         } = await supabase.auth.getSession();
+
+        if (sessionError) throw sessionError;
         if (session?.user) {
           await fetchUserProfile(session.user.id, session.user.email!);
         }
@@ -109,20 +113,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setIsLoading(true);
-      try {
-        if (session?.user) {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        return;
+      }
+
+      if (session?.user) {
+        try {
+          setIsLoading(true);
           await fetchUserProfile(session.user.id, session.user.email!);
-        } else {
-          setUser(null);
+        } catch (error) {
+          setError(
+            error instanceof Error ? error.message : "Authentication error"
+          );
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "Auth state change error"
-        );
-      } finally {
-        setIsLoading(false);
       }
     });
 
