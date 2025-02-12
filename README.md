@@ -97,11 +97,11 @@ Run these SQL commands in your Supabase project:
 ```sql
 -- Create profiles table
 CREATE TABLE profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE,
+  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   name TEXT,
   is_staff BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create events table
@@ -114,19 +114,68 @@ CREATE TABLE events (
   location TEXT NOT NULL,
   organizer_id UUID REFERENCES profiles(id) NOT NULL,
   max_attendees INT,
-  current_attendees INT DEFAULT 0,
+  current_attendees INT DEFAULT 0 CHECK (current_attendees >= 0),
   image_url TEXT,
   category TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create event registrations table
 CREATE TABLE event_registrations (
   event_id UUID REFERENCES events(id) ON DELETE CASCADE,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (event_id, user_id)
 );
+
+-- Attendee count functions
+CREATE OR REPLACE FUNCTION increment_attendees(event_id UUID)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE events
+  SET current_attendees = current_attendees + 1
+  WHERE id = event_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION decrement_attendees(event_id UUID)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE events
+  SET current_attendees = GREATEST(current_attendees - 1, 0)
+  WHERE id = event_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Row Level Security Policies
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_registrations ENABLE ROW LEVEL SECURITY;
+
+-- Events policies
+CREATE POLICY "Enable read access" ON events
+FOR SELECT USING (true);
+
+CREATE POLICY "Allow staff management" ON events
+FOR ALL USING (
+  (SELECT is_staff FROM profiles WHERE id = auth.uid())
+);
+
+CREATE POLICY "Allow attendee updates" ON events
+FOR UPDATE USING (true) WITH CHECK (
+  current_attendees BETWEEN 0 AND COALESCE(max_attendees, 999999)
+);
+
+-- Registrations policies
+CREATE POLICY "Enable user registrations" ON event_registrations
+FOR INSERT WITH CHECK (
+  user_id = auth.uid() AND
+  (SELECT max_attendees FROM events WHERE id = event_id) >
+  (SELECT current_attendees FROM events WHERE id = event_id)
+);
+
+CREATE POLICY "Enable user unregistrations" ON event_registrations
+FOR DELETE USING (user_id = auth.uid());
 ```
 
 ### 5. Run Development Server
