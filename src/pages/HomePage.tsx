@@ -6,7 +6,6 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen flex items-center bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-slate-900 dark:to-slate-800 py-20 px-4">
       <div className="max-w-4xl mx-auto text-center relative">
-        {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden opacity-10 dark:opacity-5">
           <div className="absolute -top-20 -left-20 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 dark:bg-purple-900/50 animate-blob"></div>
           <div className="absolute top-40 -right-20 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 dark:bg-blue-900/50 animate-blob animation-delay-2000"></div>
@@ -68,6 +67,7 @@ export const HomePage = () => {
           </div>
 
           {/* Feature Highlights */}
+          <h2 className="sr-only">Key Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-left">
             <div className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">
