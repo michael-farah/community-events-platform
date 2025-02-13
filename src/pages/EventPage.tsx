@@ -3,12 +3,6 @@ import { useParams } from "react-router-dom";
 import { eventsApi } from "../utils/api/events";
 import { useAuth } from "../context/AuthContext";
 import { format, parseISO, isPast } from "date-fns";
-import {
-  gapiLoaded,
-  gisLoaded,
-  addEventToCalendar,
-  handleAuthClick,
-} from "../utils/googleCalendar";
 
 export const EventPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -16,11 +10,6 @@ export const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    gapiLoaded();
-    gisLoaded();
-  }, []);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -38,45 +27,45 @@ export const EventPage = () => {
     loadEvent();
   }, [eventId]);
 
-  const handleAddToCalendar = async () => {
-    if (!isAuthenticated || !user) {
-      sessionStorage.setItem("redirectEventId", eventId!);
-      showAuthModal();
-      return;
-    }
+  const handleAddToCalendar = () => {
     try {
       const eventDate = new Date(event.date);
       const [hours, minutes] = event.time.split(":").map(Number);
 
-      eventDate.setHours(hours, minutes, 0, 0);
+      const startDate = new Date(eventDate);
+      startDate.setUTCHours(hours);
+      startDate.setUTCMinutes(minutes);
+      startDate.setUTCSeconds(0);
 
-      const startDateTime = eventDate.toISOString();
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
 
-      const endDateTime = new Date(
-        eventDate.getTime() + 60 * 60 * 1000
-      ).toISOString();
-
-      const eventDetails = {
-        title: event.title,
-        location: event.location,
-        description: event.description,
-        startDateTime: startDateTime,
-        endDateTime: endDateTime,
+      const formatGoogleDate = (date: Date) => {
+        return (
+          date
+            .toISOString()
+            .replace(/[-:]/g, "")
+            .split(".")[0]
+            .replace("T", "") + "Z"
+        );
       };
 
-      await handleAuthClick(
-        async () => {
-          await addEventToCalendar(eventDetails);
-          alert("Event added to Google Calendar!");
-        },
-        (error) => {
-          console.error("Google OAuth error:", error);
-          alert("Failed to authenticate with Google.");
-        }
-      );
-    } catch (err) {
+      const start = formatGoogleDate(startDate);
+      const end = formatGoogleDate(endDate);
+
+      const url = new URL("https://calendar.google.com/calendar/render");
+      url.searchParams.set("action", "TEMPLATE");
+      url.searchParams.set("dates", `${start}/${end}`);
+      url.searchParams.set("text", event.title);
+      url.searchParams.set("details", event.description || "");
+      url.searchParams.set("location", event.location);
+      url.searchParams.set("sf", "true");
+      url.searchParams.set("output", "xml");
+
+      window.open(url.toString(), "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error generating calendar link:", error);
       setError(
-        err instanceof Error ? err.message : "Failed to add event to calendar"
+        "Failed to generate calendar event. Please check event details."
       );
     }
   };

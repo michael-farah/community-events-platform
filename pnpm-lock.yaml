@@ -27,18 +27,6 @@ importers:
       '@eslint/js':
         specifier: ^9.17.0
         version: 9.18.0
-      '@types/gapi':
-        specifier: ^0.0.47
-        version: 0.0.47
-      '@types/gapi.auth2':
-        specifier: ^0.0.61
-        version: 0.0.61
-      '@types/gapi.client':
-        specifier: ^1.0.8
-        version: 1.0.8
-      '@types/gapi.client.calendar-v3':
-        specifier: ^0.0.4
-        version: 0.0.4
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.18
@@ -616,12 +604,6 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@maxim_mazurok/gapi.client.calendar-v3@0.0.20250115':
-    resolution: {integrity: sha512-Gptt1XiifkKjeRL7sCT6W5dkrafguVqY+vdyZ0qUdYmqdAXZC6rE3u59+htmSBc0eqAJgS6U7fJb2xmhAavMTw==}
-
-  '@maxim_mazurok/gapi.client.discovery-v1@0.1.20200806':
-    resolution: {integrity: sha512-Wl6UfmZVDdWbY3PUu8E2ULk9RPLjnMqp/iOA4tcK8Ne+U/GmlnWP/e34IaZNGArfl7iXJNOG+/3Rj9L9jQyF9Q==}
-
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -802,21 +784,6 @@ packages:
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
-
-  '@types/gapi.auth2@0.0.61':
-    resolution: {integrity: sha512-cn+omiRoE/LTxZncnVl1QhcLggOT0sJ8Yz9RXIsw5R2zLyRf+0o6kaZzJ/Gr3Sxz6i7J/+PbXAF8yeZipCaiWw==}
-
-  '@types/gapi.client.calendar-v3@0.0.4':
-    resolution: {integrity: sha512-EwXzPhk98ef+esL1R951e3HFeMQSP6hSBv+YBbaAJoOLLRANV2JY5KHOImBSkk7HKt1PiarQGx5BD8+4eHeeIQ==}
-
-  '@types/gapi.client.discovery-v1@0.0.4':
-    resolution: {integrity: sha512-uevhRumNE65F5mf2gABLaReOmbFSXONuzFZjNR3dYv6BmkHg+wciubHrfBAsp3554zNo3Dcg6dUAlwMqQfpwjQ==}
-
-  '@types/gapi.client@1.0.8':
-    resolution: {integrity: sha512-qJQUmmumbYym3Amax0S8CVzuSngcXsC1fJdwRS2zeW5lM63zXkw4wJFP+bG0jzgi0R6EsJKoHnGNVTDbOyG1ng==}
-
-  '@types/gapi@0.0.47':
-    resolution: {integrity: sha512-/ZsLuq6BffMgbKMtZyDZ8vwQvTyKhKQ1G2K6VyWCgtHHhfSSXbk4+4JwImZiTjWNXfI2q1ZStAwFFHSkNoTkHA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -2397,16 +2364,6 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@maxim_mazurok/gapi.client.calendar-v3@0.0.20250115':
-    dependencies:
-      '@types/gapi.client': 1.0.8
-      '@types/gapi.client.discovery-v1': 0.0.4
-
-  '@maxim_mazurok/gapi.client.discovery-v1@0.1.20200806':
-    dependencies:
-      '@types/gapi.client': 1.0.8
-      '@types/gapi.client.discovery-v1': 0.0.4
-
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -2568,22 +2525,6 @@ snapshots:
   '@types/cookie@0.6.0': {}
 
   '@types/estree@1.0.6': {}
-
-  '@types/gapi.auth2@0.0.61':
-    dependencies:
-      '@types/gapi': 0.0.47
-
-  '@types/gapi.client.calendar-v3@0.0.4':
-    dependencies:
-      '@maxim_mazurok/gapi.client.calendar-v3': 0.0.20250115
-
-  '@types/gapi.client.discovery-v1@0.0.4':
-    dependencies:
-      '@maxim_mazurok/gapi.client.discovery-v1': 0.1.20200806
-
-  '@types/gapi.client@1.0.8': {}
-
-  '@types/gapi@0.0.47': {}
 
   '@types/json-schema@7.0.15': {}
 
