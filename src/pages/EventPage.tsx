@@ -1,15 +1,29 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { eventsApi } from "../utils/api/events";
 import { useAuth } from "../context/AuthContext";
 import { format, parseISO, isPast } from "date-fns";
 
 export const EventPage = () => {
+  const navigate = useNavigate();
   const { eventId } = useParams<{ eventId: string }>();
   const { user, isAuthenticated, showAuthModal } = useAuth();
   const [event, setEvent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -28,6 +42,13 @@ export const EventPage = () => {
   }, [eventId]);
 
   const handleAddToCalendar = () => {
+    if (!event) return;
+
+    if (isPast(parseISO(event.date))) {
+      setError("This event has already passed.");
+      return;
+    }
+
     try {
       const eventDate = new Date(event.date);
       const [hours, minutes] = event.time.split(":").map(Number);
@@ -96,6 +117,17 @@ export const EventPage = () => {
     }
   };
 
+  const handleDeleteEvent = async () => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        await eventsApi.deleteEvent(eventId!);
+        navigate("/events");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to delete event");
+      }
+    }
+  };
+
   if (!eventId) {
     return (
       <div className="text-center py-12 text-red-500">Event not found</div>
@@ -131,6 +163,12 @@ export const EventPage = () => {
     );
   }
 
+  if (!event) {
+    return (
+      <div className="text-center py-12 text-red-500">Event not found</div>
+    );
+  }
+
   const isRegistered = event.registrations?.some(
     (reg: any) => reg.user_id === user?.id
   );
@@ -140,7 +178,67 @@ export const EventPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 relative">
+        {user?.isStaff && !isEventPast && (
+          <div className="absolute top-4 right-4" ref={menuRef}>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+              <svg
+                className="w-6 h-6 text-gray-600 dark:text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-lg py-1 z-10">
+                <Link
+                  to={`/events/${eventId}/edit`}
+                  className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                  Edit Event
+                </Link>
+                <button
+                  onClick={handleDeleteEvent}
+                  className="flex items-center w-full px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-600">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  Delete Event
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
           {event.title}
         </h1>
@@ -232,22 +330,46 @@ export const EventPage = () => {
         </div>
 
         {!isEventPast && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-4">
             {isRegistered ? (
               <button
                 onClick={handleUnregistration}
-                className="w-full py-3 px-6 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors">
+                className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                  />
+                </svg>
                 Unregister from Event
               </button>
             ) : (
               <button
                 onClick={handleRegistration}
                 disabled={isEventFull || !isAuthenticated}
-                className={`w-full py-3 px-6 ${
+                className={`w-full flex items-center justify-center gap-2 py-3 px-6 ${
                   isEventFull || !isAuthenticated
-                    ? "bg-gray-300 cursor-not-allowed"
+                    ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-75"
                     : "bg-blue-600 hover:bg-blue-700"
-                } text-white font-semibold rounded-lg transition-colors`}>
+                } text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5`}>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                  />
+                </svg>
                 {isEventFull
                   ? "Event Full"
                   : !isAuthenticated
@@ -257,7 +379,19 @@ export const EventPage = () => {
             )}
             <button
               onClick={handleAddToCalendar}
-              className="w-full py-3 px-6 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg mt-4 transition-colors">
+              className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
               Add to Google Calendar
             </button>
           </div>

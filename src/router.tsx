@@ -4,6 +4,7 @@ import { EventsPage } from "./pages/EventsPage";
 import { HomePage } from "./pages/HomePage";
 import { EventPage } from "./pages/EventPage";
 import { CreateEventPage } from "./pages/CreateEventPage";
+import { EditEventPage } from "./pages/EditEventPage";
 
 export const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
       { path: "events", element: <EventsPage /> },
       { path: "events/:eventId", element: <EventPage /> },
       { path: "events/create", element: <CreateEventPage /> },
+      { path: "events/:eventId/edit", element: <EditEventPage /> },
     ],
   },
 ]);

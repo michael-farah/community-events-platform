@@ -39,6 +39,7 @@ export const EventsPage = () => {
           organizer:profiles(name)
         `
         )
+        .gte("date", new Date().toISOString())
         .order("date", { ascending: true });
 
       if (error) throw error;
