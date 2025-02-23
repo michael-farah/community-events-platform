@@ -15,7 +15,7 @@ A community events platform that allows users to discover, register for, and man
 - **Event Management**:
   - Browse upcoming events
   - Event registration/unregistration
-  - Google Calendar integration
+  - Add to Google Calendar via custom link
   - Staff-only event creation
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Accessibility**: WCAG compliant components and keyboard navigation
@@ -30,7 +30,6 @@ A community events platform that allows users to discover, register for, and man
 - React + TypeScript
 - React Router
 - Tailwind CSS
-- Google Calendar API
 
 **Backend:**
 
@@ -64,7 +63,6 @@ src/
 - Node.js (v18+)
 - npm (v9+)
 - Supabase account
-- Google Cloud account (for Calendar API)
 
 ### 1. Clone Repository
 
@@ -86,8 +84,6 @@ Create a `.env` file with the following content:
 ```env
 VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-VITE_GOOGLE_API_KEY=your-google-api-key
 ```
 
 ### 4. Database Setup (Supabase)
@@ -208,19 +204,6 @@ The platform is hosted on Firebase.
 
 ---
 
-## Google Calendar Integration
-
-To enable calendar functionality:
-
-1. Create a Google Cloud Project.
-2. Enable the Calendar API.
-3. Create OAuth 2.0 credentials.
-4. Add authorized JavaScript origins.
-
----
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
----
